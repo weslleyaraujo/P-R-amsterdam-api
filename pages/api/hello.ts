@@ -2,7 +2,7 @@
 import cheerio from "cheerio";
 const PAGE_URL = "https://penr.stachanov.com/penr/currentAvailability/index";
 
-type Status = "closed" | "no information" | "available";
+type Status = "closed" | "no information" | "available" | "full";
 const cache = new Map();
 export default async function handler(req, res) {
   const $ = cheerio.load(
@@ -47,7 +47,9 @@ export default async function handler(req, res) {
 
       return {
         id: location,
-        location,
+        location: location.startsWith("P+R ")
+          ? location.replace(/P+R /g, "")
+          : location,
         availability: availability.toLowerCase() as Status,
         spaces: toNumber(spaces),
       };
