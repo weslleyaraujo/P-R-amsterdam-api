@@ -33,6 +33,7 @@ export default async function handler(req, res) {
     return data;
   }
   const data: {
+    id: string;
     location: string;
     availability: Status;
     spaces: number;
@@ -45,6 +46,7 @@ export default async function handler(req, res) {
         .map((element) => parse($(element).text()));
 
       return {
+        id: location,
         location,
         availability: availability.toLowerCase() as Status,
         spaces: toNumber(spaces),
