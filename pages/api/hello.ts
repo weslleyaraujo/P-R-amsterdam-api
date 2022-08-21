@@ -2,7 +2,9 @@
 import cheerio from "cheerio";
 const PAGE_URL = "https://penr.stachanov.com/penr/currentAvailability/index";
 
-type Status = "closed" | "no information" | "available" | "full";
+type Status = "available" | "no information" | "full" | "closed";
+const sortBy: Status[] = ["available", "no information", "full", "closed"];
+
 const cache = new Map();
 export default async function handler(req, res) {
   const $ = cheerio.load(
@@ -28,7 +30,6 @@ export default async function handler(req, res) {
     cache.has(createdKey) &&
     new Date().getTime() - created.getTime() > 1000 * 60 * 1
   ) {
-    console.log("from cache");
     const data = cache.get(createdKey);
     return data;
   }
@@ -45,17 +46,23 @@ export default async function handler(req, res) {
         .toArray()
         .map((element) => parse($(element).text()));
 
+      const locationName = location.startsWith("P+R ")
+        ? location.replace(/P\+R /g, "")
+        : location;
+
       return {
-        id: location,
-        location: location.startsWith("P+R ")
-          ? location.replace(/P+R /g, "")
-          : location,
+        id: locationName,
+        location: locationName,
         availability: availability.toLowerCase() as Status,
         spaces: toNumber(spaces),
       };
     });
 
-  console.log("clear and new cache");
+  data.sort(
+    (current, next) =>
+      sortBy.indexOf(current.availability) - sortBy.indexOf(next.availability)
+  );
+
   cache.clear();
   cache.set(createdKey, {
     data,
