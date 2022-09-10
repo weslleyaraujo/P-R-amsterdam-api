@@ -5,7 +5,6 @@ const PAGE_URL = "https://penr.stachanov.com/penr/currentAvailability/index";
 type Status = "available" | "no information" | "full" | "closed";
 const sortBy: Status[] = ["available", "no information", "full", "closed"];
 
-const cache = new Map();
 export default async function handler(req, res) {
   const $ = cheerio.load(
     await fetch(PAGE_URL, {
@@ -23,16 +22,6 @@ export default async function handler(req, res) {
     .filter(Boolean)
     .filter((item) => !/Last|update\:/.test(item)) as string[];
 
-  const created = new Date(`${date} ${time}`);
-  const createdKey = created.toUTCString();
-
-  if (
-    cache.has(createdKey) &&
-    new Date().getTime() - created.getTime() > 1000 * 60 * 1
-  ) {
-    const data = cache.get(createdKey);
-    return data;
-  }
   const data: {
     id: string;
     location: string;
@@ -63,14 +52,14 @@ export default async function handler(req, res) {
       sortBy.indexOf(current.availability) - sortBy.indexOf(next.availability)
   );
 
-  cache.clear();
-  cache.set(createdKey, {
+  const response = {
     data,
     update: {
       date,
       time,
     },
-  });
+  };
 
-  res.status(200).json(cache.get(createdKey));
+  res.setHeader("Cache-Control", "s-maxage=60");
+  res.status(200).json(response);
 }
