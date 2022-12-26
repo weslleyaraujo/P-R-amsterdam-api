@@ -4,4 +4,4 @@ P+R Amsterdam API is the backbone of [P+R Amsterdam](https://github.com/weslleya
 
 --
 
-Download on [AppStore]()
+Download on [AppStore](https://apps.apple.com/us/app/p-r-amsterdam/id1643429046)
